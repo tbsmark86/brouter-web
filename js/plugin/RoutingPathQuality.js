@@ -9,11 +9,14 @@ BR.RoutingPathQuality = L.Control.extend({
     initialize: function (map, layersControl, options) {
         L.setOptions(this, options);
 
-        // hotline uses canvas and cannot be moved in front of the svg, so we create another pane
-        map.createPane('routingQualityPane');
-        map.getPane('routingQualityPane').style.zIndex = 450;
-        map.getPane('routingQualityPane').style.pointerEvents = 'none';
-        var renderer = new L.Hotline.Renderer({ pane: 'routingQualityPane' });
+        var renderer = new L.Hotline.Renderer({ pane: 'overlayPane' });
+        renderer._initContainer = function () {
+            L.Hotline.Renderer.prototype._initContainer.call(this);
+            // move hotline-specific-canvas in front of other overlays
+            // normal canvas (z-index 100) and svg (z-index 200)
+            this._container.style.pointerEvents = 'none';
+            this._container.style.zIndex = '210';
+        };
 
         this._routingSegments = L.featureGroup();
         this._routingSegments.id = 'route-quality'; // for URL hash instead of language name
